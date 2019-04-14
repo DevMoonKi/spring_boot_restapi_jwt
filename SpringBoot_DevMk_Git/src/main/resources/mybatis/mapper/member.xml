@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.SpringBoot.rest.member.mapper.MemberMapper">
+
+
+	<!-- 
+		쿼리명 회원 전체조회
+	-->
+    <select id="selectList" resultType="memberVO">
+        SELECT 
+        	MEMBER_IDX AS memberIdx
+        	, MEMBER_ID AS memberId
+        	, MEMBER_NAME AS memberName
+        	, MEMBER_PW AS memberPw
+        	, CRT_DTM AS crtDtm
+        	, UPD_DTM AS updDtm
+        FROM REST_MEMBER
+       	WHERE DEL_YN = 'N'
+    </select>
+    
+    <!-- 
+		쿼리명 : 회원 상세조회
+		param : memberVO
+	-->
+    <select id="selectMap" resultType="memberVO" parameterType="memberVO">
+        SELECT 
+       		MEMBER_IDX AS memberIdx
+        	, MEMBER_ID AS memberId
+        	, MEMBER_NAME AS memberName
+        	, MEMBER_PW AS memberPw
+        	, CRT_DTM AS crtDtm
+        	, UPD_DTM AS updDtm
+        FROM REST_MEMBER
+        WHERE MEMBER_ID = #{memberId}
+        AND MEMBER_PW = #{memberPw}
+    </select>
+
+	<!-- 
+		쿼리명 : 게시판 상세조회
+		param : int
+	-->
+    <select id="selectOne" resultType="memberVO" parameterType="java.lang.Integer">
+        SELECT 
+       		MEMBER_IDX AS memberIdx
+        	, MEMBER_ID AS memberId
+        	, MEMBER_NAME AS memberName
+        	, MEMBER_PW AS memberPw
+        	, CRT_DTM AS crtDtm
+        	, UPD_DTM AS updDtm
+        FROM REST_MEMBER
+        WHERE MEMBER_IDX = #{memberIdx}
+    </select>
+    
+    	<!-- 
+		쿼리명 : 게시판 상세조회
+		param : memberVO
+		return : int
+	-->
+    <select id="idCheck" resultType="java.lang.Integer" parameterType="memberVO">
+        SELECT COUNT(*) AS CNT
+        FROM REST_MEMBER
+        WHERE MEMBER_ID = #{memberId}
+    </select>
+
+	<!-- 
+		쿼리명 : 회원 등록
+		param : memberVO
+	-->
+	<insert id="insert" parameterType="memberVO">
+        INSERT INTO REST_MEMBER(
+			MEMBER_IDX
+			, MEMBER_ID
+			, MEMBER_PW
+			, MEMBER_NAME
+			, EMAIL
+			, CRT_DTM
+			, UPD_DTM
+        )VALUES(
+            REST_SEQ.nextval
+            , #{memberId}
+            , #{memberPw}
+            , #{memberName}            
+            , #{email}
+            , TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+            , TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+        )
+    </insert>
+
+	<!-- 
+		쿼리명 : 회원 수정
+		param : memberVO
+	-->
+   	<update id="update" parameterType="memberVO">
+        UPDATE 
+        	REST_MEMBER
+        SET
+			MEMBER_PW = #{memberPw}
+			,UPD_DTM =  TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE 
+			MEMBER_ID = #{memberId}		
+		AND
+			MEMBER_PW = #{memberPw}
+    </update>
+    
+    <!-- 
+		쿼리명 : 회원 삭제
+		param : memberVO
+	-->
+   	<update id="delete" parameterType="memberVO">
+        UPDATE 
+        	REST_MEMBER
+        SET
+			DEL_YN = 'Y'
+			,UPD_DTM =  TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE 
+			MEMBER_ID = #{memberId}		
+		AND
+			MEMBER_PW = #{memberPw}
+    </update>
+
+	<!-- 
+		쿼리명 : 이메일 확인
+		param : emailConfirmVO
+	-->    
+    <update id="emailConfirmUpdate" parameterType="emailConfirmVO">
+    	UPDATE 
+    		REST_MEMBER 
+		SET 
+			STATUS_CODE = 'USER'
+		WHERE 
+			MEMBER_ID =(
+								SELECT MEMBER_ID from EMAIL_CONFIRM 
+              					WHERE EMAIL_KEY = #{emailKey} 
+              					AND EXPIRED_DATE > SYSDATE
+              					AND USER_TYPE_CODE = (
+                													SELECT USER_TYPE_CODE 
+                													FROM EMAIL_CONFIRM 
+                													WHERE EMAIL_KEY = #{emailKey} 
+                													AND EXPIRED_DATE > SYSDATE
+                				)
+                			)
+    
+    </update>
+    
+	<!-- 
+		쿼리명 : 이메일 발송여부
+		param : emailConfirmVO
+	-->      
+    <select id="emailConfirmKeyCheck" parameterType="emailConfirmVO">
+    	SELECT COUNT(*) 
+    	FROM EMAIL_CONFIRM 
+    	WHERE EMAIL_KEY = #{emailKey}
+    </select>
+
+	<!-- 
+		쿼리명 : 이메일 발송키 삭제
+		param : emailConfirmVO
+	-->        
+    <delete id="emailConfirmKeyDelete" parameterType="emailConfirmVO">
+    	DELETE FROM EMAIL_CONFIRM 
+    	WHERE EMAIL_KEY = #{emailKey}
+    </delete>
+    
+    <!-- 
+		쿼리명 : 이메일 발송정보 등록
+		param : emailConfirmVO
+	-->    
+	<insert id="emailConfirmInsert" parameterType="emailConfirmVO">
+		INSERT INTO
+			EMAIL_CONFIRM (
+				EMAIL_KEY
+				, MEMBER_ID
+				, USER_TYPE_CODE
+				, EXPIRED_DATE
+				, CRT_DTM
+			) VALUES (
+				#{emailKey}
+				, #{memberId}
+				, #{userTypeCode}
+				, SYSDATE+1
+				, SYSDATE
+			)
+	</insert>
+	
+</mapper>

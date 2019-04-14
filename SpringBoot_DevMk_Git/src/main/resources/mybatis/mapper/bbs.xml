@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.SpringBoot.rest.bbs.mapper.BbsMapper">
+
+		<sql id="bbsSearch">
+			AND A.DEL_YN = 'N'
+		    <if test="scope !=null and scope != '' and keyword != null and keyword != ''">
+				<choose>
+					<when test="scope=='title' ">AND A.TITLE LIKE '%'||#{keyword}||'%'</when>
+					<when test="scope=='contents' ">AND A.CONTENTS LIKE '%'||#{keyword}||'%'</when>
+					<when test="scope=='all' ">AND A.TITLE LIKE '%'||#{keyword}||'%' OR A.CONTENTS LIKE '%'||#{keyword}||'%'</when>
+				</choose>
+			</if>	
+		</sql>
+
+ 	<!-- 
+		쿼리명 : 게시판 전체조회
+	-->	
+    <select id="getSelectRestBbsList" resultType="bbsVO" parameterType="searchVO">
+    
+    	SELECT
+    		RNUM
+ 		    , restBbsIdx
+ 		    , title
+ 		    , contents
+ 		    , crtDtm
+ 		    , updDtm
+ 		    , memberIdx
+ 		    , fileName
+ 		    , delYn
+ 		FROM
+		(
+	        SELECT 
+	        	ROWNUM RNUM
+	        	, REST_BBS_IDX	as restBbsIdx
+				, TITLE	as title
+				, CONTENTS		as contents
+				, CRT_DTM	as crtDtm
+				, UPD_DTM	as updDtm
+				, MEMBER_IDX	as memberIdx
+				, FILE_NAME as fileName
+				, DEL_YN	as delYn
+			FROM
+			(
+				SELECT
+					A.REST_BBS_IDX
+					, A.TITLE
+					, B.FILE_NAME
+					, A.CONTENTS		
+					, A.CRT_DTM
+					, A.UPD_DTM	
+					, A.MEMBER_IDX	
+					, A.DEL_YN	
+		        FROM REST_BBS A, REST_FILE B
+		       	WHERE 1=1
+		       	AND A.REST_BBS_IDX = B.REST_BBS_IDX(+)
+		       	<include refid="bbsSearch"/>
+       	 		ORDER BY REST_BBS_IDX DESC
+			) A
+			WHERE ROWNUM <![CDATA[<=]]> #{limit}
+		)AA
+		WHERE RNUM <![CDATA[>=]]>#{offset}
+    </select>
+
+ 	<!-- 
+		쿼리명 : 게시판 전체건수
+	-->	
+    <select id="selectCount" resultType="java.lang.Integer" parameterType="searchVO">
+        SELECT COUNT(*) CNT
+        FROM REST_BBS A
+       	WHERE 1=1
+       	<include refid="bbsSearch"/>
+    </select>
+    
+	<!-- 
+		쿼리명 : 게시판 상세조회
+	-->	
+    <select id="selectOne" resultType="bbsVO" parameterType="java.lang.Integer">
+        SELECT 
+        	REST_BBS_IDX	as restBbsIdx
+			, TITLE	as title
+			, CONTENTS		as contents
+			, CRT_DTM	as crtDtm
+			, UPD_DTM	as updDtm
+			, MEMBER_IDX	as memberIdx
+			, DEL_YN	as delYn
+        FROM REST_BBS
+        WHERE REST_BBS_IDX = #{seq}
+      	AND DEL_YN = 'N'
+    </select>
+
+	<!-- 
+		쿼리명 : 게시판 등록
+	-->
+	<insert id="insert" parameterType="bbsVO">
+        INSERT INTO REST_BBS(
+			REST_BBS_IDX
+			, TITLE
+			, CONTENTS
+			, CRT_DTM
+			, UPD_DTM
+			, MEMBER_IDX
+        )VALUES(
+            REST_SEQ.nextval
+            , #{title}
+            , #{contents}
+            , TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+            , TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+            , #{memberIdx}
+        )
+    </insert>
+
+	<!-- 
+		쿼리명 : 게시판 수정
+	-->
+   	<update id="update" parameterType="bbsVO">
+        UPDATE 
+        	REST_BBS
+        SET
+			TITLE = #{title}
+			, CONTENTS = #{contents}
+			,UPD_DTM =  TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE 
+			REST_BBS_IDX = #{seq}		
+    </update>
+    
+	<!-- 
+		쿼리명 : 게시판 삭제
+	-->
+   	<update id="delete" parameterType="bbsVO">
+        UPDATE 
+        	REST_BBS
+        SET
+			DEL_YN = 'Y'
+			,UPD_DTM =  TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+		WHERE REST_BBS_IDX = #{seq}
+    </update>
+    
+</mapper>

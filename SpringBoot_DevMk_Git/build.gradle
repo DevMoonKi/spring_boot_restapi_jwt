@@ -1,0 +1,76 @@
+plugins {
+	id 'org.springframework.boot' version '2.1.3.RELEASE'
+	id 'java'
+	id 'war'
+}
+
+//그래들5부터 무조건 넣어야함.. bootwar 비활성화  톰캣용 일반 war 활성
+ bootWar.enabled = false
+ war.enabled = true
+
+war {
+	baseName = 'ROOT'
+	//version = '0.0.1'
+}
+
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.example'
+//version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '1.8'
+
+repositories {
+	mavenCentral()
+    maven { url "https://code.lds.org/nexus/content/groups/main-repo"}  /* oracle ref url*/
+}
+
+dependencies {
+
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+
+	/*json*/
+ 	implementation 'com.google.code.gson:gson:2.8.5'
+ 	implementation 'com.fasterxml.jackson.core:jackson-core:2.9.8'
+	implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.8'
+	implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+	
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	/*devtools*/
+	compile('org.springframework.boot:spring-boot-devtools')
+	compile('org.apache.tomcat.embed:tomcat-embed-jasper')
+	compile('javax.servlet:jstl')
+	/*lombok*/
+	compile('org.projectlombok:lombok')
+	/*spring*/
+    compile("org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.2")
+ 	//compile 'org.springframework.boot:spring-boot-starter-security'
+  	//compile 'org.springframework.security.oauth.boot:spring-security-oauth2-autoconfigure:2.1.3.RELEASE'
+    compile('org.springframework.boot:spring-boot-starter-jdbc')
+    compile('com.auth0:java-jwt:3.1.0')
+    compile group: 'io.jsonwebtoken', name: 'jjwt', version: '0.7.0'
+    // aop
+	compile('org.springframework.boot:spring-boot-starter-aop')
+     /* oracle jdbc driver */
+    compile 'com.oracle:ojdbc6:11.2.0.3'   
+    /*mysql jdbc driver */      
+    runtime('mysql:mysql-connector-java')    
+	// swagger
+	compile('io.springfox:springfox-swagger2:2.7.0')
+	compile('io.springfox:springfox-swagger-ui:2.7.0')
+	compile('io.swagger:swagger-jersey2-jaxrs:1.5.17')                           
+    /* log */   
+    compile group: 'org.bgee.log4jdbc-log4j2', name: 'log4jdbc-log4j2-jdbc4', version: '1.16' /* sql easy log*/
+	// mail
+	compile("org.springframework.boot:spring-boot-starter-mail")
+	// messages 주석하면 jsp가 작동하고 주석을 안하면 thymeleaf가 작동한다.
+	//compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+	// redis
+	//compile("org.springframework.boot:spring-boot-starter-data-redis")
+	// http modules
+	compile('com.squareup.retrofit2:retrofit:2.3.0')
+	compile('com.squareup.retrofit2:converter-gson:2.3.0')
+	compile('com.google.code.gson:gson:2.8.2')
+	compile('com.squareup.okhttp3:okhttp:3.9.1')
+	compile('org.apache.commons:commons-lang3:3.7')
+}

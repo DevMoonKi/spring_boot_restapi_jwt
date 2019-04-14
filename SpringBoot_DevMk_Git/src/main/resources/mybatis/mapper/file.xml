@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.SpringBoot.rest.file.mapper.FileMapper">
+
+    	<!-- 
+		쿼리명 : 게시판 등록
+	-->
+	<insert id="fileInsert" parameterType="fileVO">
+        INSERT INTO REST_FILE(
+			REST_FILE_KEY
+			, REST_BBS_IDX
+			, FILE_NAME
+			, FILE_SIZE
+			, FILE_PATH
+			, CRT_DTM
+			, MEMBER_IDX
+			, FILE_TYPE
+        )VALUES(
+            REST_SEQ.nextval
+            , #{restBbsIdx}
+            , #{fileName}
+            , #{fileSize}
+            , #{filePath}
+            , TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
+            , #{memberIdx}
+            , #{fileType}
+        )
+    </insert>
+
+    <!-- 
+		쿼리명 : 게시판의 마지막 프라이머리키 조회
+	-->
+   	<select id="selectMaxRestBbsIdx" resultType="java.lang.Integer">
+        SELECT MAX(REST_BBS_IDX) AS REST_BBS_IDX
+        FROM REST_BBS
+        WHERE ROWNUM = 1
+    </select>
+
+    
+</mapper>
